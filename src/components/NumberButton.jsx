@@ -1,7 +1,11 @@
 import React from "react";
 
-const NumberButton = props => {
-  return <button id={props.numberInText}>{props.number}</button>;
+const CalcButton = props => {
+  return (
+    <button id={props.id} onClick={props.onClick}>
+      {props.value}
+    </button>
+  );
 };
 
-export default NumberButton;
+export default CalcButton;
