@@ -17,15 +17,14 @@ const NumberButtons = [
 const mathOperationButtons = [
   { id: "add", operationSign: "+" },
   { id: "subtract", operationSign: "-" },
-  { id: "multiply", operationSign: "*" },
+  { id: "multiply", operationSign: "x" },
   { id: "divide", operationSign: "/" }
 ];
 
 class Calculator extends Component {
   state = {
-    formula: "",
-    currentNumberInput: "",
-    displayText: ""
+    currentNumberInput: "0",
+    displayText: "0"
   };
 
   constructor() {
@@ -34,19 +33,26 @@ class Calculator extends Component {
     this.addDecimal = this.addDecimal.bind(this);
     this.addOperation = this.addOperation.bind(this);
     this.calcResult = this.calcResult.bind(this);
+    this.clearScreen = this.clearScreen.bind(this);
   }
 
   addNumber(num) {
-    // multiple zeros at beginning of number not allowed
-    if (this.state.currentNumberInput === "0" && num === 0) return;
-
-    this.setState(prevState => {
-      console.log(prevState);
-      return {
-        displayText: prevState.displayText + num.toString(),
-        currentNumberInput: prevState.currentNumberInput + num.toString()
-      };
-    });
+    // the starting zero will be replaced by the first input number
+    if (this.state.currentNumberInput === "0") {
+      this.setState({
+        displayText: num.toString(),
+        currentNumberInput: num.toString()
+      });
+    }
+    // add to the number otherwise
+    else {
+      this.setState(prevState => {
+        return {
+          displayText: prevState.displayText + num.toString(),
+          currentNumberInput: prevState.currentNumberInput + num.toString()
+        };
+      });
+    }
   }
 
   addDecimal() {
@@ -65,19 +71,50 @@ class Calculator extends Component {
   }
 
   addOperation(op) {
-    console.log(op + "was clicked");
+    const lastChar = this.state.displayText[this.state.displayText.length - 1];
+    // if last character is 0 (the default starting value), a decimal or an operation, replace it with new input operation
+    if (
+      lastChar === "/" ||
+      lastChar === "x" ||
+      lastChar === "-" ||
+      lastChar === "+" ||
+      lastChar === "." ||
+      this.state.currentNumberInput === "0"
+    ) {
+      this.setState(prevState => {
+        return {
+          displayText: prevState.displayText.replace(/.$/, op),
+          currentNumberInput: ""
+        };
+      });
+    }
+    // otherwise we just add the clicked operation sign to the string
+    else {
+      this.setState(prevState => {
+        return {
+          displayText: prevState.displayText + op,
+          currentNumberInput: ""
+        };
+      });
+    }
   }
 
   calcResult() {
-    console.log("result is...");
+    let formula = this.state.displayText.replace(/x/g, "*");
+    console.log(eval(formula));
+  }
+
+  clearScreen() {
+    this.setState({
+      displayText: "0",
+      currentNumberInput: "0"
+    });
   }
 
   render() {
-    const displayFormulaText =
-      this.state.displayText === "" ? "0" : this.state.displayText;
     return (
       <div>
-        <output id="display">{displayFormulaText}</output>
+        <output id="display">{this.state.displayText}</output>
         <section>
           {NumberButtons.map(button => (
             <CalcButton
