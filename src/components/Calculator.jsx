@@ -24,7 +24,8 @@ const mathOperationButtons = [
 class Calculator extends Component {
   state = {
     currentNumberInput: "0",
-    displayText: "0"
+    displayText: "0",
+    result: 0
   };
 
   constructor() {
@@ -37,15 +38,18 @@ class Calculator extends Component {
   }
 
   addNumber(num) {
-    // the starting zero will be replaced by the first input number
-    if (this.state.currentNumberInput === "0") {
+    if (this.state.result !== 0) {
+      this.setState({
+        displayText: num,
+        result: 0,
+        currentNumberInput: num
+      });
+    } else if (this.state.currentNumberInput === "0") {
       this.setState({
         displayText: num.toString(),
         currentNumberInput: num.toString()
       });
-    }
-    // add to the number otherwise
-    else {
+    } else {
       this.setState(prevState => {
         return {
           displayText: prevState.displayText + num.toString(),
@@ -56,8 +60,13 @@ class Calculator extends Component {
   }
 
   addDecimal() {
-    // only allow decimal if number already contains at least one digit and doesn't contain a decimal
-    if (
+    if (this.state.result !== 0) {
+      this.setState({
+        displayText: "0.",
+        currentNumberInput: "0.",
+        result: 0
+      });
+    } else if (
       this.state.currentNumberInput.length > 0 &&
       this.state.currentNumberInput.indexOf(".") === -1
     ) {
@@ -72,8 +81,15 @@ class Calculator extends Component {
 
   addOperation(op) {
     const lastChar = this.state.displayText[this.state.displayText.length - 1];
+    if (this.state.result !== 0) {
+      this.setState({
+        displayText: this.state.result + op,
+        currentNumberInput: "",
+        result: 0
+      });
+    }
     // if last character is 0 (the default starting value), a decimal or an operation, replace it with new input operation
-    if (
+    else if (
       lastChar === "/" ||
       lastChar === "x" ||
       lastChar === "-" ||
@@ -100,8 +116,18 @@ class Calculator extends Component {
   }
 
   calcResult() {
-    let formula = this.state.displayText.replace(/x/g, "*");
-    console.log(eval(formula));
+    let formula = this.state.displayText;
+    if (formula.includes("x"))
+      formula = this.state.displayText.replace(/x/g, "*");
+    try {
+      const result = eval(formula);
+      this.setState(prevState => ({
+        displayText: prevState.displayText + "=" + result,
+        result
+      }));
+    } catch {
+      console.log("ERROR!");
+    }
   }
 
   clearScreen() {
