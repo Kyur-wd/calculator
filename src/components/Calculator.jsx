@@ -1,7 +1,9 @@
 import React, { Component } from "react";
-import CalcButton from "./NumberButton";
+import CalcButton from "./CalcButton";
 
-const NumberButtons = [
+const MAX_DISPLAY_LENGTH = 16;
+
+const numberButtons = [
   { id: "zero", number: 0 },
   { id: "one", number: 1 },
   { id: "two", number: 2 },
@@ -40,16 +42,16 @@ class Calculator extends Component {
   addNumber(num) {
     if (this.state.result !== 0) {
       this.setState({
-        displayText: num,
+        displayText: num.toString(),
         result: 0,
-        currentNumberInput: num
+        currentNumberInput: num.toString()
       });
     } else if (this.state.currentNumberInput === "0") {
       this.setState({
         displayText: num.toString(),
         currentNumberInput: num.toString()
       });
-    } else {
+    } else if (this.state.currentNumberInput.length < MAX_DISPLAY_LENGTH) {
       this.setState(prevState => {
         return {
           displayText: prevState.displayText + num.toString(),
@@ -68,7 +70,8 @@ class Calculator extends Component {
       });
     } else if (
       this.state.currentNumberInput.length > 0 &&
-      this.state.currentNumberInput.indexOf(".") === -1
+      this.state.currentNumberInput.indexOf(".") === -1 &&
+      this.state.currentNumberInput.length < MAX_DISPLAY_LENGTH - 1
     ) {
       this.setState(prevState => {
         return {
@@ -121,48 +124,51 @@ class Calculator extends Component {
       formula = this.state.displayText.replace(/x/g, "*");
     try {
       const result = eval(formula);
-      this.setState(prevState => ({
-        displayText: prevState.displayText + "=" + result,
+      this.setState({
+        displayText: result.toString(),
         result
-      }));
-    } catch {
-      console.log("ERROR!");
-    }
+      });
+    } catch {}
   }
 
   clearScreen() {
     this.setState({
       displayText: "0",
-      currentNumberInput: "0"
+      currentNumberInput: "0",
+      result: 0
     });
   }
 
   render() {
     return (
-      <div>
-        <output id="display">{this.state.displayText}</output>
-        <section>
-          {NumberButtons.map(button => (
-            <CalcButton
-              key={button.id}
-              id={button.id}
-              value={button.number}
-              onClick={() => this.addNumber(button.number)}
-            />
-          ))}
-          {mathOperationButtons.map(button => (
-            <CalcButton
-              key={button.id}
-              id={button.id}
-              value={button.operationSign}
-              onClick={() => this.addOperation(button.operationSign)}
-            />
-          ))}
-          <CalcButton id={"decimal"} value={"."} onClick={this.addDecimal} />
-          <CalcButton id={"equals"} value={"="} onClick={this.calcResult} />
-          <CalcButton id={"clear"} value={"AC"} onClick={this.clearScreen} />
-        </section>
-      </div>
+      <main id="calculator-container">
+        <div id="calculator">
+          <section id="display">
+            <output>{this.state.displayText}</output>
+          </section>
+          <section id="calculator-buttons-container">
+            {numberButtons.map(button => (
+              <CalcButton
+                key={button.id}
+                id={button.id}
+                value={button.number}
+                onClick={() => this.addNumber(button.number)}
+              />
+            ))}
+            {mathOperationButtons.map(button => (
+              <CalcButton
+                key={button.id}
+                id={button.id}
+                value={button.operationSign}
+                onClick={() => this.addOperation(button.operationSign)}
+              />
+            ))}
+            <CalcButton id={"decimal"} value={"."} onClick={this.addDecimal} />
+            <CalcButton id={"equals"} value={"="} onClick={this.calcResult} />
+            <CalcButton id={"clear"} value={"AC"} onClick={this.clearScreen} />
+          </section>
+        </div>
+      </main>
     );
   }
 }
